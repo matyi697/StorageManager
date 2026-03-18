@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Raktárkezelő</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #007bff; --success: #28a745; --warning: #ffc107; --danger: #dc3545; --gray: #6c757d; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f0f2f5 0%, #a3b3c6 100%); background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; color: #333; }
+        
+        .navbar { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 100; }
+        .navbar h1 { margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .nav-logo { height: 35px; width: auto; object-fit: contain; background: #3368c6; padding: 2px; border-radius: 6px; }
+        .nav-right { display: flex; align-items: center; gap: 20px; font-size: 14px; }
+        .logout-btn { background: transparent; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; border: 1px solid rgba(255,255,255,0.3); transition: 0.3s; }
+        .logout-btn:hover { background: var(--danger); border-color: var(--danger); }
+
+        .container { max-width: 1250px; margin: 30px auto; padding: 0 20px; }
+
+        .action-bar { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; }
+        .action-bar h2 { margin: 0; color: var(--primary); font-size: 28px; }
+        .action-buttons { display: flex; gap: 12px; }
+        
+        .btn { padding: 12px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; transition: 0.3s; display: inline-block; cursor: pointer; border: none; font-size: 14px; }
+        .btn-new { background: var(--success); color: white; }
+        .btn-new:hover { background: #218838; }
+        .btn-warning { background: var(--warning); color: #212529; }
+        .btn-warning:hover { background: #e0a800; }
+
+        .toolbar { background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+        .search-box input { padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; width: 400px; font-size: 14px; outline: none; transition: 0.3s; }
+        .search-box input:focus { border-color: var(--accent); }
+
+        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); position: relative; z-index: 2; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: left; padding: 14px 12px; background: #f8f9fa; color: var(--gray); font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #eee; }
+        td { padding: 14px 12px; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; color: #1a1a1a; font-weight: 500; }
+        tr:hover { background-color: #fcfcfc; }
+
+        .badge { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; white-space: nowrap; }
+        .badge-done { background: #d4edda; color: var(--success); border: 1px solid #c3e6cb; }
+        .badge-closed { background: #f8d7da; color: var(--danger); border: 1px solid var(--danger); }
+
+        .btn-action { background: var(--accent); color: white; padding: 8px 14px; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: bold; transition: 0.2s; display: inline-block; }
+        .btn-action:hover { background: #0056b3; }
+
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 25px; padding-bottom: 20px; }
+        .page-btn { padding: 8px 14px; border: 1px solid #ddd; border-radius: 6px; text-decoration: none; color: var(--primary); font-weight: bold; background: white; transition: 0.3s; }
+        .page-btn:hover { background: #f0f2f5; }
+        .page-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* ÚJ: Riasztási sáv stílus */
+        .alert-low-stock { display: flex; justify-content: space-between; align-items: center; background: #fdeaea; color: #c82333; padding: 15px 25px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c2c2; font-weight: 500; }
+        .btn-danger-small { background: #dc3545; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 13px; transition: 0.3s; }
+        .btn-danger-small:hover { background: #bd2130; }
+        .btn-secondary-small { background: #6c757d; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 13px; transition: 0.3s; }
+        .btn-secondary-small:hover { background: #5a6268; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <h1>
+            <img src="https://fejlesztes.pipettacenter.hu/wp-content/uploads/2025/06/PIPETTA-CENTER-LOGO-7.png" alt="Logo" class="nav-logo">
+            Raktárkezelő
+        </h1>
+        <div class="nav-right">
+            <span>👤 Üdv, <strong><%= username %></strong></span>
+            <a href="/logout" class="logout-btn">Kijelentkezés</a>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <% if (lowStockCount > 0) { %>
+            <div class="alert-low-stock">
+                <div>
+                    ⚠️ <strong>Figyelem!</strong> <strong><%= lowStockCount %> db</strong> alkatrész készlete a riasztási küszöb alatt van!
+                </div>
+                <div>
+                    <% if (currentFilter !== 'low') { %>
+                        <a href="/dashboard?filter=low" class="btn-danger-small">Kifogyóban lévők listázása ➔</a>
+                    <% } else { %>
+                        <a href="/dashboard" class="btn-secondary-small">✖ Összes mutatása</a>
+                    <% } %>
+                </div>
+            </div>
+        <% } else if (currentFilter === 'low') { %>
+            <div class="alert-low-stock" style="background: #d4edda; color: #155724; border-color: #c3e6cb;">
+                <div>✅ Jelenleg minden alkatrészből elegendő készlet áll rendelkezésre!</div>
+                <div><a href="/dashboard" class="btn-secondary-small">✖ Összes mutatása</a></div>
+            </div>
+        <% } %>
+
+        <div class="action-bar">
+            <div>
+                <h2>Alkatrész nyilvántartó</h2>
+                <% if (currentFilter === 'low') { %>
+                    <p style="color: var(--danger); font-weight: bold; margin-top: 5px;">Csak a kifogyóban lévő alkatrészeket látod.</p>
+                <% } %>
+            </div>
+            <div class="action-buttons">
+                <a href="/new-part" class="btn btn-new">➕ Új alkatrész</a>
+                <a href="/stock-info" class="btn btn-warning">ℹ️ Leltár</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="toolbar" style="box-shadow: none; padding: 0 0 15px 0; margin: 0;">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Alkatrész keresése (név, gyári szám)..." onkeyup="filterTables()">
+                </div>
+            </div>
+
+            <table id="parts-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Név</th>
+                        <th>Gyári szám</th>
+                        <th>Ár</th>
+                        <th>Készlet</th>
+                        <th>Műveletek</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (parts.length > 0) { %>
+                        <% parts.forEach(function(part) { %>
+                            <tr>
+                                <td><strong>#<%= part.id %></strong></td>
+                                <td><%= part.name %></td>
+                                <td><%= part.part_number %></td>
+                                <td><%= part.price %> Ft</td>
+                                <td>
+                                    <% let badgeClass = (part.quantity <= part.min_quantity) ? 'badge-closed' : 'badge-done'; %>
+                                    <span class="badge <%= badgeClass %>">
+                                        <%= part.quantity %> db
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="/part/<%= part.id %>" class="btn-action">Adatok ➔</a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--gray); padding: 30px;">
+                                Nincs megjeleníthető alkatrész az adatbázisban.
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+
+            <% if (totalPages > 1) { %>
+                <div class="pagination">
+                    <% 
+                        // Kiegészítjük az URL-t, ha be van kapcsolva a szűrő
+                        let filterParam = (currentFilter === 'low') ? '&filter=low' : ''; 
+                    %>
+                    
+                    <% if (currentPage > 1) { %>
+                        <a href="/dashboard?page=<%= currentPage - 1 %><%= filterParam %>" class="page-btn">Előző</a>
+                    <% } %>
+
+                    <% for(let i = 1; i <= totalPages; i++) { %>
+                        <a href="/dashboard?page=<%= i %><%= filterParam %>" class="page-btn <%= currentPage === i ? 'active' : '' %>"><%= i %></a>
+                    <% } %>
+
+                    <% if (currentPage < totalPages) { %>
+                        <a href="/dashboard?page=<%= currentPage + 1 %><%= filterParam %>" class="page-btn">Következő</a>
+                    <% } %>
+                </div>
+            <% } %>
+
+        </div>
+    </div>
+
+    <script>
+        function filterTables() {
+            let input = document.getElementById("searchInput");
+            let filter = input.value.toUpperCase();
+            let table = document.getElementById("parts-table");
+            let tr = table.getElementsByTagName("tr");
+
+            for (let i = 1; i < tr.length; i++) {
+                let tdName = tr[i].getElementsByTagName("td")[1];
+                let tdPartNumber = tr[i].getElementsByTagName("td")[2];
+                if (tdName || tdPartNumber) {
+                    let txtValueName = tdName.textContent || tdName.innerText;
+                    let txtValuePartNumber = tdPartNumber.textContent || tdPartNumber.innerText;
+                    if (txtValueName.toUpperCase().indexOf(filter) > -1 || txtValuePartNumber.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }       
+            }
+        }
+    </script>
+</body>
+</html>

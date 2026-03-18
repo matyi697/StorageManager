@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alkatrész adatlap</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #007bff;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --gray: #6c757d;
+            --bg: #f0f2f5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f2f5 0%, #a3b3c6 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* NAVBAR */
+        .navbar { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 100; }
+        .navbar h1 { margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .nav-logo { height: 35px; width: auto; object-fit: contain; background: #3368c6; padding: 2px; border-radius: 6px; }
+        .nav-right { display: flex; align-items: center; gap: 20px; font-size: 14px; }
+        .logout-btn { background: transparent; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; border: 1px solid rgba(255,255,255,0.3); transition: 0.3s; }
+        .logout-btn:hover { background: var(--danger); border-color: var(--danger); }
+
+        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+
+        /* HEADER */
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .page-header h2 { margin: 0; color: var(--primary); font-size: 28px; }
+        .btn-back { background: var(--gray); color: white; padding: 10px 16px; text-decoration: none; border-radius: 6px; font-weight: bold; transition: 0.3s; }
+        .btn-back:hover { background: #5a6268; }
+
+        /* KÁRTYA ÉS ADATOK */
+        .card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); border-top: 5px solid var(--accent); }
+        
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .info-box { background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+        
+        .info-label { font-size: 12px; font-weight: bold; color: var(--gray); text-transform: uppercase; margin-bottom: 5px; }
+        .info-value { font-size: 18px; font-weight: 500; color: var(--primary); word-break: break-word; }
+
+        .full-width { grid-column: span 2; }
+
+        /* BADGES */
+        .badge { padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; }
+        .badge-done { background: #d4edda; color: var(--success); border: 1px solid #c3e6cb; }
+        .badge-closed { background: #f8d7da; color: var(--danger); border: 1px solid var(--danger); }
+
+        /* GOMBOK */
+        .action-buttons { display: flex; gap: 15px; border-top: 1px solid #eee; padding-top: 20px; }
+        .btn-edit { background: var(--warning); color: #212529; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; transition: 0.3s; }
+        .btn-edit:hover { background: #e0a800; }
+        .btn-delete { background: var(--danger); color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; transition: 0.3s; }
+        .btn-delete:hover { background: #c82333; }
+        
+        .link-supplier { color: var(--accent); text-decoration: none; font-weight: bold; }
+        .link-supplier:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <h1>
+            <img src="https://fejlesztes.pipettacenter.hu/wp-content/uploads/2025/06/PIPETTA-CENTER-LOGO-7.png" alt="Logo" class="nav-logo">
+            Alkatrész adatlap
+        </h1>
+        <div class="nav-right">
+            <span>👤 Üdv, <strong><%= username %></strong></span>
+            <a href="/logout" class="logout-btn">Kijelentkezés</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <h2>ℹ️ Alkatrész adatlap</h2>
+            <a href="/dashboard" class="btn-back">⬅ Vissza az irányítópultra</a>
+        </div>
+
+        <div class="card">
+            
+            <div class="info-grid">
+                <div class="info-box full-width">
+                    <div class="info-label">Alkatrész neve</div>
+                    <div class="info-value" style="font-size: 24px; font-weight: bold;"><%= part.name %></div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">Gyári szám (Cikkszám)</div>
+                    <div class="info-value"><%= part.part_number %></div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">Jelenlegi készlet</div>
+                    <div class="info-value">
+                        <% let badgeClass = (part.quantity <= part.min_quantity) ? 'badge-closed' : 'badge-done'; %>
+                        <span class="badge <%= badgeClass %>">
+                            <%= part.quantity %> db
+                        </span>
+                        <span style="font-size: 13px; color: var(--gray); margin-left: 10px;">
+                            (Riasztási küszöb: <%= part.min_quantity %> db)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">Nettó ár</div>
+                    <div class="info-value"><%= part.price %> Ft</div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">Raktári pozíció</div>
+                    <div class="info-value">
+                        <%= part.location ? part.location : 'Nincs megadva' %>
+                    </div>
+                </div>
+
+                <div class="info-box full-width">
+                    <div class="info-label">Beszerzési forrás / Link</div>
+                    <div class="info-value">
+                        <% if (part.supplier) { %>
+                            <% if (part.supplier.startsWith('http')) { %>
+                                <a href="<%= part.supplier %>" target="_blank" class="link-supplier">Külső hivatkozás megnyitása ➔</a>
+                            <% } else { %>
+                                <%= part.supplier %>
+                            <% } %>
+                        <% } else { %>
+                            <span style="color: var(--gray); font-style: italic;">Nincs megadva</span>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <a href="/edit-part/<%= part.id %>" class="btn-edit">✏️ Szerkesztés</a>
+                <a href="/delete-part/<%= part.id %>" class="btn-delete" onclick="return confirm('Biztosan törölni szeretnéd ezt az alkatrészt a rendszerből? Ez a művelet nem visszavonható!')">🗑️ Törlés</a>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
